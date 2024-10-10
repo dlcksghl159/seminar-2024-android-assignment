@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 상단 고정 레이아웃 -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <!-- 검색 바와 프로필 이미지를 한 줄로 배치 -->
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/search_background"
+            android:padding="8dp"
+            android:layout_gravity="center_vertical">
+
+            <!-- 왼쪽 검색 아이콘 -->
+            <ImageView
+                android:id="@+id/search_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_search" />
+
+            <!-- 중앙의 검색창 (EditText) -->
+            <EditText
+                android:id="@+id/search_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/mike_icon"
+                android:layout_toEndOf="@id/search_icon"
+                android:background="@null"
+                android:hint="앱 및 게임 검색"
+                android:padding="8dp"
+                android:singleLine="true" />
+
+            <ImageView
+                android:id="@+id/mike_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_mike" />
+
+        </RelativeLayout>
+
+        <!-- 오른쪽 프로필 이미지 -->
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_marginEnd="12dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:src="@drawable/ic_profile_picture"
+            android:scaleType="centerCrop"
+            android:clipToOutline="true"
+            android:background="@drawable/circle_background"
+            android:layout_gravity="center_vertical" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <!-- RecyclerView 바로 상단 고정 레이아웃 밑에 위치 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical" />
+
+</LinearLayout>
