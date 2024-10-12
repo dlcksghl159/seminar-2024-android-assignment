@@ -43,7 +43,7 @@
                 android:layout_toStartOf="@+id/mike_icon"
                 android:layout_toEndOf="@id/search_icon"
                 android:background="@null"
-                android:hint="앱 및 게임 검색"
+                android:hint="영화 및 시리즈 검색"
                 android:padding="8dp"
                 android:singleLine="true" />
 
@@ -70,6 +70,18 @@
             android:layout_gravity="center_vertical" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:padding="16dp"
+        android:text="장르 탐색"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    
 
     <!-- RecyclerView 바로 상단 고정 레이아웃 밑에 위치 -->
     <androidx.recyclerview.widget.RecyclerView

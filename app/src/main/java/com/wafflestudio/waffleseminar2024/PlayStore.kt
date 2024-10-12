@@ -85,5 +85,8 @@ class PlayStore : AppCompatActivity() {
             v.updatePadding(top = systemBars.top, left = systemBars.left, right = systemBars.right, bottom = systemBars.bottom)
             insets
         }
+
+
+
     }
 }
