@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.kapt")  // kapt 플러그인 추가
 }
 
 android {
@@ -36,6 +37,13 @@ android {
 }
 
 dependencies {
+    // Coil 추가
+    implementation ("io.coil-kt:coil:2.1.0")
+    implementation ("com.google.code.gson:gson:2.8.8")
+
+    // Glide 추가
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    kapt ("com.github.bumptech.glide:compiler:4.15.1")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
