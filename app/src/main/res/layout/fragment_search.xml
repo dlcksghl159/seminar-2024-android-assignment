@@ -35,8 +35,8 @@
                 android:src="@drawable/ic_search" />
 
             <!-- 중앙의 검색창 (EditText) -->
-            <SearchView
-                android:id="@+id/search_view"
+            <EditText
+                android:id="@+id/searchBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -46,8 +46,9 @@
                 android:hint="영화 및 시리즈 검색"
                 android:padding="8dp"
                 android:singleLine="true"
-                android:iconifiedByDefault="false"
-                 />
+                android:imeOptions="actionSearch"
+                android:inputType="text" />
+
 
             <ImageView
                 android:id="@+id/mike_icon"
@@ -91,7 +92,12 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scrollbars="vertical"
-         />
+    />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/movieRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/history_recycler_view"
