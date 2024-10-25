@@ -188,14 +188,17 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
     // 검색 기록 불러오기
     private fun loadSearchHistory() {
-        val sharedPreferences =
-            requireContext().getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
-        val historySet = sharedPreferences.getStringSet("history", null)
-        historySet?.let {
+        val sharedPreferences = requireContext().getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
+        val jsonHistory = sharedPreferences.getString("history", null)
+
+        // JSON 문자열을 historyList로 변환하여 불러오기
+        if (jsonHistory != null) {
+            val savedHistoryList = Gson().fromJson(jsonHistory, Array<String>::class.java).toList()
             historyList.clear()
-            historyList.addAll(it)
+            historyList.addAll(savedHistoryList)
         }
     }
+
 
     private fun loadGenres() {
         genreMap["액션"] = 28
