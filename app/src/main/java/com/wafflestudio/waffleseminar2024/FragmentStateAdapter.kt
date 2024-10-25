@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -23,6 +24,7 @@ import com.example.assignment0.MovieAdapter
 import com.example.assignment0.MovieResponse
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import com.google.gson.reflect.TypeToken
 import java.io.IOException
 
 class MyFragmentStateAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
@@ -65,12 +67,14 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         initializeSearchBar(view)  // searchBar를 먼저 초기화
+
+        loadSearchHistory()       // 어댑터 초기화 전에 검색 기록을 로드
+        setupHistoryRecyclerView(view)
+
         setupRecyclerView(view)
-        setupHistoryRecyclerView(view)  // 이후에 setupHistoryRecyclerView 호출
         initializeRecyclerView(view)
         initializeBackButtonHandling()
 
-        loadSearchHistory()
         loadGenres()
         loadMovies()
         return view
@@ -101,22 +105,25 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             Genre(37, "서부", R.drawable.ic_western)
         )
 
+        // 장르 어댑터 설정 시 클릭 리스너 추가
         adapter = GenreAdapter(genres) { genre ->
-            // 장르 클릭 시 동작
+            handleSearchAction(genre.name)  // 장르 클릭 시 검색 실행
         }
+
         recyclerView.adapter = adapter
     }
 
     private fun initializeSearchBar(view: View) {
         val searchBar: EditText = view.findViewById(R.id.searchBar)
-        searchBar.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                showHistoryRecyclerView()  // 검색바에 포커스가 갈 때 검색 기록 표시
+
+        searchBar.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                showHistoryRecyclerView()
                 historyRecyclerView.scrollToPosition(0)
-            } else {
-                hideHistoryRecyclerView()  // 포커스를 잃으면 검색 기록 숨기기
             }
+            false // false를 반환하여 EditText의 기본 동작을 유지합니다.
         }
+
         searchBar.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 handleSearchAction(searchBar.text.toString().trim())
@@ -155,8 +162,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
             // 검색 기록에 추가 및 저장
             if (!historyList.contains(query)) {
-                historyList.add(0, query)  // 최신 기록을 상단에 추가
+                historyList.add(0, query)  // 최신 검색어를 상단에 추가
                 saveSearchHistory()
+                historyAdapter.notifyDataSetChanged() // 어댑터에 데이터 변경 알림
             }
 
         } else {
@@ -165,39 +173,57 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         }
         movieAdapter.notifyDataSetChanged()
         hideKeyboard()
+        val searchBar: EditText = view?.findViewById(R.id.searchBar) ?: return
+        searchBar.setText("")
+        searchBar.clearFocus() // 검색바의 포커스 해제
     }
 
     private fun setupHistoryRecyclerView(view: View) {
         historyRecyclerView = view.findViewById(R.id.history_recycler_view)
+        historyRecyclerView.visibility = View.GONE
         historyAdapter = HistoryAdapter(historyList) { selectedHistory ->
-            handleSearchAction(selectedHistory)  // 기록을 검색어로 사용해 검색 수행
-            hideHistoryRecyclerView()  // 검색 기록 숨기기
+            handleSearchAction(selectedHistory)
+            hideHistoryRecyclerView()
         }
         historyRecyclerView.layoutManager = LinearLayoutManager(context)
         historyRecyclerView.adapter = historyAdapter
+        historyAdapter.notifyDataSetChanged()
     }
 
-    // 검색 기록 저장
     private fun saveSearchHistory() {
-        val sharedPreferences =
-            requireContext().getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = requireContext().getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putStringSet("history", historyList.toSet())
+        val gson = Gson()
+        val json = gson.toJson(historyList)
+        editor.putString("history_json", json) // 새로운 키 사용
         editor.apply()
     }
 
-    // 검색 기록 불러오기
     private fun loadSearchHistory() {
         val sharedPreferences = requireContext().getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
-        val jsonHistory = sharedPreferences.getString("history", null)
-
-        // JSON 문자열을 historyList로 변환하여 불러오기
-        if (jsonHistory != null) {
-            val savedHistoryList = Gson().fromJson(jsonHistory, Array<String>::class.java).toList()
+        val gson = Gson()
+        val json = sharedPreferences.getString("history_json", null) // 새로운 키 사용
+        if (json != null) {
+            // JSON 문자열로 저장된 경우
+            val type = object : TypeToken<List<String>>() {}.type
+            val savedList: List<String> = gson.fromJson(json, type)
             historyList.clear()
-            historyList.addAll(savedHistoryList)
+            historyList.addAll(savedList)
+        } else {
+            // 이전 방식으로 저장된 데이터가 있는 경우
+            val oldSet = sharedPreferences.getStringSet("history", null)
+            if (oldSet != null) {
+                historyList.clear()
+                historyList.addAll(oldSet)
+                saveSearchHistory() // 새로운 방식으로 저장
+                sharedPreferences.edit().remove("history").apply() // 이전 데이터 제거
+            }
         }
     }
+
+
+
+
 
 
     private fun loadGenres() {
@@ -287,14 +313,20 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         movieRecyclerView.layoutManager = GridLayoutManager(context, 3)
         movieRecyclerView.adapter = movieAdapter
         movieRecyclerView.visibility = View.GONE  // 초기에는 리사이클러뷰 숨기기
+
     }
 
     private fun showHistoryRecyclerView() {
-        historyRecyclerView.visibility = View.VISIBLE
+        historyRecyclerView.post {
+            historyRecyclerView.visibility = View.VISIBLE
+            historyRecyclerView.bringToFront()
+        }
     }
 
     private fun hideHistoryRecyclerView() {
-        historyRecyclerView.visibility = View.GONE
+        historyRecyclerView.post {
+            historyRecyclerView.visibility = View.GONE
+        }
     }
 
 
